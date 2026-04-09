@@ -9,9 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="portal.css">
+    <link rel="stylesheet" href="cursor.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div class="portal-bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    <div class="glass-noise"></div>
 
     <!-- Authentication Overlay -->
     <div id="login-overlay" class="login-overlay">
@@ -32,74 +39,130 @@
     </div>
 
     <!-- Main App -->
-    <div class="portal-layout" id="app-container" style="display: none;">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar card-glass">
-            <div class="logo sidebar-logo">
+    <div class="portal-layout" id="app-container">
+
+        <!-- Full Top Navigation Bar -->
+        <header class="top-navbar">
+            <!-- Logo -->
+            <div class="logo topbar-logo">
                 <span class="logo-icon">🫁</span>
                 <span class="logo-text">Dust<span class="highlight-cyan">Guard</span></span>
             </div>
-            
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-target="view-overview">
-                    <span class="icon">📊</span> Overview
+
+            <!-- Navigation Links -->
+            <nav class="topbar-nav" id="main-nav">
+                <a href="#" class="nav-item active" data-target="view-home">
+                    <span class="icon">🏠</span> Home
                 </a>
-                <a href="#" class="nav-item" data-target="view-scanner">
-                    <span class="icon">🔍</span> NFC Scanner
+                <a href="#" class="nav-item portal-only" data-target="view-overview" style="display: none;">
+                    <span class="icon">📊</span> Command Center
                 </a>
-                <a href="#" class="nav-item" data-target="view-active-shifts">
-                    <span class="icon">⏱️</span> Active Shifts
-                </a>
-                <a href="#" class="nav-item" data-target="view-directory">
-                    <span class="icon">📇</span> Worker Directory
-                </a>
-                <a href="#" class="nav-item" data-target="view-fleet">
-                    <span class="icon">📈</span> Fleet Analytics
-                </a>
-                <a href="#" class="nav-item" data-target="view-map">
+                <a href="#" class="nav-item portal-only" data-target="view-map" style="display: none;">
                     <span class="icon">🗺️</span> Quarry Map
+                </a>
+                <a href="#" class="nav-item" data-target="view-tech">
+                    <span class="icon">⚡</span> How it Works
                 </a>
             </nav>
 
-            <div class="sidebar-bottom mt-xl">
-                <button class="btn btn-primary w-full" style="background: rgba(255, 59, 48, 0.2); border: 1px solid var(--accent-red); box-shadow: 0 0 15px rgba(255, 59, 48, 0.4); color: white;" id="btn-lockdown">🚨 INITIATE LOCKDOWN</button>
+            <!-- Right Controls -->
+            <div class="topbar-right">
+                <button class="btn btn-primary" id="btn-launch-portal">Launch Portal ➔</button>
+                <div class="user-profile hidden" id="login-profile">
+                    <div class="avatar">👨‍💼</div>
+                    <span>Supervisor</span>
+                </div>
             </div>
-        </aside>
+        </header>
 
         <!-- Main Dashboard Content -->
         <main class="dashboard-content">
-            <header class="top-nav">
-                <div>
-                    <h2 class="page-title" id="dyn-title">Live Tracking</h2>
-                    <p class="text-secondary text-sm">Zone B Sector - Live Simulation</p>
-                </div>
-                <div class="user-profile">
-                    <div class="avatar">👨‍💼</div>
-                    <span>Supervisor User</span>
-                </div>
-            </header>
 
-            <!-- VIEW 1: OVERVIEW SETTINGS -->
-            <section id="view-overview" class="view-section active">
-                <div class="grid layout-4-col quick-stats mb-md">
-                    <div class="stat-box card-glass">
+            <!-- VIEW: LANDING PAGE -->
+            <section id="view-home" class="view-section active hero-section">
+                <div class="hero-content">
+                    <div class="badge-new mb-md">V2.0 LIVE: NEXT-GEN BIOSYNC</div>
+                    <h1 class="hero-title">Breathe with <span class="gradient-text-cyan">Confidence.</span><br>Protect with Precision.</h1>
+                    <p class="hero-subtitle">The world's first industrial-grade IoT safety ecosystem that predicts dust exposure before it happens. Powered by NovaSafe Biosync technology.</p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary btn-lg" onclick="document.getElementById('btn-launch-portal').click()">Launch Command Center</button>
+                        <button class="btn btn-secondary btn-lg" onclick="document.querySelector('[data-target=view-tech]').click()">Watch Demo 🎬</button>
+                    </div>
+                </div>
+
+                <div class="hero-visual">
+                    <div class="floating-badge-model">
+                        <div class="badge-card-3d">
+                            <div class="card-inner">
+                                <span class="chip"></span>
+                                <div class="card-signal-waves">
+                                    <span></span><span></span><span></span>
+                                </div>
+                                <div class="card-data">
+                                    <p class="label">LIVE STATUS</p>
+                                    <h4 class="value">SYNCED</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW: HOW IT WORKS (TECH) -->
+            <section id="view-tech" class="view-section">
+                <div class="tech-grid">
+                    <div class="card-glass p-box tech-card">
+                        <div class="tech-icon">📡</div>
+                        <h3>Smart IoT Badges</h3>
+                        <p class="text-secondary">Ultra-low power NFC sensors that detect PM2.5 and PM10 particles in the immediate breathing zone of every worker.</p>
+                    </div>
+                    <div class="card-glass p-box tech-card">
+                        <div class="tech-icon">🧠</div>
+                        <h3>AI Risk Predictor</h3>
+                        <p class="text-secondary">Our exposure engine analyzes 8-hour TWA patterns to predict health risks before they lead to long-term impact.</p>
+                    </div>
+                    <div class="card-glass p-box tech-card">
+                        <div class="tech-icon">⚡</div>
+                        <h3>Live Fleet Sync</h3>
+                        <p class="text-secondary">Seamless command & control. View every worker, every sector, every breath—all within a single dashboard.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PERSISTENT DASHBOARD STATS (hidden on Landing) -->
+            <div class="persistent-stats-bar portal-only" style="display: none;">
+                <div class="stat-pill card-glass">
+                    <span class="stat-pill-icon">👷</span>
+                    <div>
                         <p class="label">Total Active</p>
                         <h3 class="value" id="global-active">42 <span class="trend up">⚡ Live</span></h3>
                     </div>
-                    <div class="stat-box card-glass">
+                </div>
+                <div class="stat-pill card-glass">
+                    <span class="stat-pill-icon">🌫️</span>
+                    <div>
                         <p class="label">Avg Sector PM2.5</p>
-                        <h3 class="value" id="global-avg">22 µg</h3>
-                    </div>
-                    <div class="stat-box card-glass">
-                        <p class="label">Active Danger Alerts</p>
-                        <h3 class="value warning" id="global-alerts">0</h3>
-                    </div>
-                    <div class="stat-box card-glass">
-                        <p class="label">Avg Tracking Time</p>
-                        <h3 class="value">4h 12m</h3>
+                        <h3 class="value" id="global-avg">12 µg</h3>
                     </div>
                 </div>
+                <div class="stat-pill card-glass">
+                    <span class="stat-pill-icon">🔔</span>
+                    <div>
+                        <p class="label">Alerts (24h)</p>
+                        <h3 class="value" id="global-alerts">0</h3>
+                    </div>
+                </div>
+                <div class="stat-pill card-glass">
+                    <span class="stat-pill-icon">⏱️</span>
+                    <div>
+                        <p class="label">Tracking uptime</p>
+                        <h3 class="value">99.9%</h3>
+                    </div>
+                </div>
+            </div>
 
+            <!-- VIEW 1: OVERVIEW -->
+            <section id="view-overview" class="view-section">
                 <div class="dashboard-grid">
                     <div class="panel-card live-worker-panel card-glass">
                         <div class="panel-header flex space-between align-center">
@@ -208,23 +271,25 @@
                         </div>
                     </div>
                     
-                    <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--border-glass);">
-                                <th style="padding: 1rem; color: var(--text-secondary);">Worker ID</th>
-                                <th style="padding: 1rem; color: var(--text-secondary);">Name</th>
-                                <th style="padding: 1rem; color: var(--text-secondary);">Hours</th>
-                                <th style="padding: 1rem; color: var(--text-secondary);">Cur PM2.5</th>
-                                <th style="padding: 1rem; color: var(--text-secondary);">SpO2</th>
-                                <th style="padding: 1rem; color: var(--text-secondary);">Est. TWA</th>
-                                <th style="padding: 1rem; color: var(--text-secondary);">Danger Stage</th>
-                                <th style="padding: 1rem; color: var(--text-secondary); text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="active-workers-table-body">
-                            <!-- JavaScript generates rows here -->
-                        </tbody>
-                    </table>
+                    <div class="table-wrapper">
+                        <table class="active-workers-table">
+                            <thead>
+                                <tr>
+                                    <th>Worker ID</th>
+                                    <th>Name</th>
+                                    <th>Hours</th>
+                                    <th>Cur PM2.5</th>
+                                    <th>SpO2</th>
+                                    <th>Est. TWA</th>
+                                    <th>Danger Stage</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="active-workers-table-body">
+                                <!-- JavaScript generates rows here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -236,50 +301,108 @@
                         <h3 class="mb-sm">All Registered Workers</h3>
                     </div>
                     
-                    <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--border-glass);">
-                                <th style="padding: 1rem; color: var(--text-secondary);">Worker ID</th>
-                                <th style="padding: 1rem; color: var(--text-secondary);">Name</th>
-                                <th style="padding: 1rem; color: var(--text-secondary);">Current Status</th>
-                                <th style="padding: 1rem; color: var(--text-secondary); text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="registered-workers-table-body">
-                            <!-- JavaScript generates rows here -->
-                        </tbody>
-                    </table>
+                    <div class="table-wrapper">
+                        <table class="registered-workers-table">
+                            <thead>
+                                <tr>
+                                    <th>Worker ID</th>
+                                    <th>Name</th>
+                                    <th>Current Status</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registered-workers-table-body">
+                                <!-- JavaScript generates rows here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- VIEW 4: MAP -->
             <section id="view-map" class="view-section">
-                <div class="card-glass p-box map-container" style="min-height: 550px; background: #000; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-glass);">
-                    <div class="flex space-between align-center mb-md" style="position: relative; z-index:10;">
-                        <h3>Quarry Tactical Radar</h3>
-                        <p class="text-secondary text-sm font-mono">SECTOR B-7 ACTIVE SCANS (Click for Details)</p>
-                    </div>
-                    
-                    <div class="radar-hud" id="radar">
-                        <div class="radar-core">
-                            <div class="radar-grid"></div>
-                            <div class="radar-scan"></div>
+                <div class="quarry-layout">
+                    <!-- LEFT: Radar -->
+                    <div class="radar-panel card-glass">
+                        <div class="radar-header">
+                            <div>
+                                <h3>Quarry Tactical Radar</h3>
+                                <p class="text-secondary text-sm font-mono">SECTOR B-7 · <span id="radar-worker-count">0</span> ACTIVE · Click dot to inspect</p>
+                            </div>
+                            <div class="radar-legend">
+                                <span class="legend-dot safe"></span> Safe
+                                <span class="legend-dot caution"></span> Caution
+                                <span class="legend-dot danger"></span> Danger
+                            </div>
                         </div>
-                        <!-- dynamic dots inside radar map -->
-                        
-                        <!-- Radar Info Tooltip -->
-                        <div id="radar-tooltip" class="radar-tooltip hidden">
-                            <span class="close-tooltip" onclick="document.getElementById('radar-tooltip').classList.add('hidden')">✖</span>
-                            <p class="text-sm text-secondary">WORKER SCANNED</p>
-                            <h4 id="tt-id" class="highlight-cyan font-mono mb-sm mt-sm">ID</h4>
-                            <p><strong>Name:</strong> <span id="tt-name">Name</span></p>
-                            <p><strong>PM2.5:</strong> <span id="tt-pm">0</span> µg</p>
-                            <p><strong>Status:</strong> <span id="tt-status">SAFE</span></p>
-                            <button class="btn btn-primary w-full mt-sm" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" id="tt-btn-endshift">END SHIFT</button>
+
+                        <div class="radar-hud" id="radar">
+                            <div class="radar-core">
+                                <div class="radar-grid"></div>
+                                <div class="radar-scan"></div>
+                            </div>
+                            <!-- dynamic dots injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Worker Detail Panel -->
+                    <div class="radar-detail-panel card-glass" id="radar-detail">
+                        <!-- EMPTY STATE -->
+                        <div class="radar-empty-state" id="radar-empty">
+                            <div class="radar-empty-icon">🎯</div>
+                            <p class="text-secondary">Click a dot on the radar<br>to inspect a worker</p>
+                        </div>
+
+                        <!-- DETAIL CONTENT (hidden until dot clicked) -->
+                        <div class="radar-worker-detail hidden" id="radar-worker-info">
+                            <div class="detail-header">
+                                <div class="detail-avatar" id="d-avatar">👨🏽‍🏭</div>
+                                <div>
+                                    <h3 id="d-name">Worker Name</h3>
+                                    <p class="font-mono highlight-cyan text-sm" id="d-id">ID</p>
+                                </div>
+                            </div>
+
+                            <div class="detail-status-badge" id="d-badge">SAFE</div>
+
+                            <div class="detail-metrics">
+                                <div class="detail-metric">
+                                    <p class="label">Current PM2.5</p>
+                                    <h2 class="giant" id="d-pm">-- <span class="unit">µg/m³</span></h2>
+                                </div>
+                                <div class="detail-metric">
+                                    <p class="label">Avg TWA</p>
+                                    <h2 class="giant" id="d-twa">-- <span class="unit">µg/m³</span></h2>
+                                </div>
+                                <div class="detail-metric">
+                                    <p class="label">SpO2</p>
+                                    <h2 class="giant" id="d-spo2">-- <span class="unit">%</span></h2>
+                                </div>
+                                <div class="detail-metric">
+                                    <p class="label">Shift Hours</p>
+                                    <h2 class="giant" id="d-hours">-- <span class="unit">hrs</span></h2>
+                                </div>
+                            </div>
+
+                            <div class="twa-bar-section">
+                                <div class="flex space-between">
+                                    <p class="label">TWA vs Legal Limit (50 µg/m³)</p>
+                                    <p class="text-sm font-mono" id="d-twa-pct">0%</p>
+                                </div>
+                                <div class="progress-bar-container mt-sm">
+                                    <div class="progress-bar green" id="d-twa-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <div class="detail-actions">
+                                <button class="btn btn-secondary" id="d-btn-close" onclick="window.closeRadarDetail()">✕ Deselect</button>
+                                <button class="btn btn-primary" id="d-btn-endshift">End Shift</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
+
 
             <!-- VIEW 5: FLEET ANALYTICS -->
             <section id="view-fleet" class="view-section">
@@ -331,5 +454,6 @@
     </div>
 
     <script src="portal.js"></script>
+    <script src="cursor.js"></script>
 </body>
 </html>

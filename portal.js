@@ -9,12 +9,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function attemptLogin() {
         if (loginPass.value === 'admin') {
-            loginOverlay.style.opacity = '0';
+            loginOverlay.classList.add('hidden');
             setTimeout(() => {
                 loginOverlay.style.display = 'none';
-                appContainer.style.display = 'flex';
-                appContainer.classList.add('fade-in');
-            }, 300);
+                
+                // Show dashboard elements
+                document.querySelectorAll('.portal-only').forEach(el => {
+                    el.style.display = (el.tagName === 'DIV' || el.tagName === 'SECTION') ? 'flex' : 'inline-block';
+                    if (el.classList.contains('nav-item')) el.style.display = 'flex';
+                });
+                document.getElementById('login-profile').classList.remove('hidden');
+                document.getElementById('btn-launch-portal').style.display = 'none';
+                
+                // Navigate to Overview
+                document.querySelector('[data-target="view-overview"]').click();
+            }, 600);
         } else {
             loginError.classList.remove('hidden');
         }
@@ -25,33 +34,53 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') attemptLogin();
     });
 
+    document.getElementById('btn-launch-portal').addEventListener('click', () => {
+        loginOverlay.style.display = 'flex';
+        loginOverlay.classList.remove('hidden');
+        loginPass.focus();
+    });
+
     // --- SPA ROUTING ---
-    const navItems = document.querySelectorAll('.sidebar-nav .nav-item[data-target]');
+    const navItems = document.querySelectorAll('.topbar-nav .nav-item[data-target]');
     const viewSections = document.querySelectorAll('.view-section');
     const pageTitle = document.getElementById('dyn-title');
 
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
+            const targetId = item.getAttribute('data-target');
+            
+            // Toggle dashboard-only elements based on current view
+            const isDashboardView = ['view-overview', 'view-scanner', 'view-active-shifts', 'view-directory', 'view-fleet', 'view-map'].includes(targetId);
+            const statsBar = document.querySelector('.persistent-stats-bar');
+            if (statsBar) {
+                statsBar.style.display = isDashboardView ? 'flex' : 'none';
+            }
+
             navItems.forEach(n => n.classList.remove('active'));
             item.classList.add('active');
 
             viewSections.forEach(v => v.classList.remove('active'));
-            const targetId = item.getAttribute('data-target');
             document.getElementById(targetId).classList.add('active');
 
-            pageTitle.innerText = item.innerText.replace(/[^\w\s]/gi, '').trim(); 
+            if (pageTitle) pageTitle.innerText = item.innerText.replace(/[^\w\s]/gi, '').trim(); 
         });
     });
 
     // --- WORKER DATABASE EXPANSION ---
     let workersDB = [
-        { id: 'TN-0042', name: 'Rajan K.', pm: 18, spo2: 98, twa: 15, radarX: 50, radarY: 50, hours: 4.5, peakPM: 18, pmHistory: [18], isActive: true },
-        { id: 'TN-0089', name: 'Muthu S.', pm: 24, spo2: 97, twa: 22, radarX: 30, radarY: 70, hours: 3.2, peakPM: 24, pmHistory: [24], isActive: true },
-        { id: 'TN-0103', name: 'Siva P.', pm: 39, spo2: 95, twa: 35, radarX: 80, radarY: 20, hours: 6.1, peakPM: 39, pmHistory: [39], isActive: true },
-        { id: 'TN-0221', name: 'Karthi D.', pm: 65, spo2: 94, twa: 54, radarX: 20, radarY: 40, hours: 7.8, peakPM: 65, pmHistory: [65], isActive: true },
-        { id: 'TN-0554', name: 'Arun M.', pm: 12, spo2: 99, twa: 13, radarX: 60, radarY: 80, hours: 1.5, peakPM: 12, pmHistory: [12], isActive: true },
-        { id: 'TN-0899', name: 'Vijay R.', pm: 0, spo2: 0, twa: 0, radarX: 0, radarY: 0, hours: 0, peakPM: 0, pmHistory: [], isActive: false }
+        { id: 'TN-0042', name: 'Rajan K.', pm: 18, spo2: 98, twa: 15, radarX: 50, radarY: 50, hours: 4.5, peakPM: 18, pmHistory: [18], isActive: true, 
+          bio: 'Senior Driller with over 12 years of experience in high-dust environments. Habitual respirator user.', blood: 'O+', exp: '12y', health: 'Excellent' },
+        { id: 'TN-0089', name: 'Muthu S.', pm: 24, spo2: 97, twa: 22, radarX: 30, radarY: 70, hours: 3.2, peakPM: 24, pmHistory: [24], isActive: true,
+          bio: 'Junior technician specializing in heavy machinery maintenance. High lung capacity recorded in latest check.', blood: 'A+', exp: '3y', health: 'Good' },
+        { id: 'TN-0103', name: 'Siva P.', pm: 39, spo2: 95, twa: 35, radarX: 80, radarY: 20, hours: 6.1, peakPM: 39, pmHistory: [39], isActive: true,
+          bio: 'Safety lead for Sector Beta. Known for strict adherence to silica dust protocols.', blood: 'B+', exp: '8y', health: 'Cleared' },
+        { id: 'TN-0221', name: 'Karthi D.', pm: 65, spo2: 94, twa: 54, radarX: 20, radarY: 40, hours: 7.8, peakPM: 65, pmHistory: [65], isActive: true,
+          bio: 'Heavy loader operator. Monitoring required for historical dust sensitivity.', blood: 'O-', exp: '15y', health: 'Caution' },
+        { id: 'TN-0554', name: 'Arun M.', pm: 12, spo2: 99, twa: 13, radarX: 60, radarY: 80, hours: 1.5, peakPM: 12, pmHistory: [12], isActive: true,
+          bio: 'Newly joined excavating apprentice. Freshly certified for all NovaSafe breathing apparatus.', blood: 'AB+', exp: '1y', health: 'Excellent' },
+        { id: 'TN-0899', name: 'Vijay R.', pm: 0, spo2: 0, twa: 0, radarX: 0, radarY: 0, hours: 0, peakPM: 0, pmHistory: [], isActive: false,
+          bio: 'Quarry foreman. Oversees all sector operations from the command center.', blood: 'A-', exp: '20y', health: 'Excellent' }
     ];
 
     const activeWorkersTableBody = document.getElementById('active-workers-table-body');
@@ -82,13 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Always add to Registered Table
             const trReg = document.createElement('tr');
-            trReg.style.borderBottom = '1px solid var(--border-glass)';
             trReg.innerHTML = `
-                <td style="padding: 1rem;" class="font-mono">${w.id}</td>
-                <td style="padding: 1rem;"><strong>${w.name}</strong></td>
-                <td style="padding: 1rem;" class="${w.isActive ? 'text-green' : 'text-secondary'}">${w.isActive ? 'On-Shift' : 'Off-Shift'}</td>
-                <td style="padding: 1rem; text-align: right;">
-                    <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" ${w.isActive ? 'disabled style="opacity:0.5;"' : 'disabled'}>Profile</button>
+                <td class="font-mono">${w.id}</td>
+                <td><strong>${w.name}</strong></td>
+                <td class="${w.isActive ? 'text-green' : 'text-secondary'}">${w.isActive ? 'On-Shift' : 'Off-Shift'}</td>
+                <td class="text-right">
+                    <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="window.viewWorkerProfile('${w.id}')">Profile</button>
                 </td>
             `;
             registeredWorkersTableBody.appendChild(trReg);
@@ -96,17 +124,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // If active, add to Active Table
             if (w.isActive) {
                 const trAct = document.createElement('tr');
-                trAct.style.backgroundColor = bgCls;
-                trAct.style.borderBottom = '1px solid var(--border-glass)';
+                if (dangerStage.includes('DANGER')) trAct.style.background = 'rgba(255, 59, 48, 0.08)';
+                else if (dangerStage === 'CAUTION') trAct.style.background = 'rgba(255, 204, 0, 0.04)';
+
                 trAct.innerHTML = `
-                    <td style="padding: 1rem;" class="font-mono">${w.id}</td>
-                    <td style="padding: 1rem;"><strong>${w.name}</strong></td>
-                    <td style="padding: 1rem;" class="font-mono">${w.hours.toFixed(2)}</td>
-                    <td style="padding: 1rem;" class="font-mono ${colorCls}">${Math.round(w.pm)} µg/m³</td>
-                    <td style="padding: 1rem;">${w.spo2}%</td>
-                    <td style="padding: 1rem;" class="font-mono">${Math.round(w.twa)} µg/m³</td>
-                    <td style="padding: 1rem;" class="font-mono ${colorCls}"><strong>${dangerStage}</strong></td>
-                    <td style="padding: 1rem; text-align: right;">
+                    <td class="font-mono">${w.id}</td>
+                    <td><strong>${w.name}</strong></td>
+                    <td class="font-mono">${w.hours.toFixed(2)}</td>
+                    <td class="font-mono ${colorCls}">${Math.round(w.pm)} µg/m³</td>
+                    <td>${w.spo2}%</td>
+                    <td class="font-mono">${Math.round(w.twa)} µg/m³</td>
+                    <td class="font-mono ${colorCls}"><span class="tag-status">${dangerStage}</span></td>
+                    <td class="text-right">
                         <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="window.endWorkerShift('${w.id}')">End Shift</button>
                     </td>
                 `;
@@ -157,83 +186,223 @@ document.addEventListener('DOMContentLoaded', () => {
         w.isActive = false;
         renderWorkersTable();
         renderRadar();
-
+        window.closeRadarDetail && window.closeRadarDetail();
         modal.classList.remove('hidden');
     };
     document.getElementById('close-modal').addEventListener('click', () => modal.classList.add('hidden'));
+
+    // --- WORKER PROFILE MODAL ---
+    window.viewWorkerProfile = function(workerId) {
+        const w = workersDB.find(x => x.id === workerId);
+        if (!w) return;
+
+        // Build & inject a profile modal
+        const existing = document.getElementById('profile-modal');
+        if (existing) existing.remove();
+
+        const stage = (w.pm > 50 || w.twa > 50) ? 'DANGER' : (w.pm > 25 || w.twa > 25) ? 'CAUTION' : 'SAFE';
+        const stageColor = { DANGER: '#ff3b30', CAUTION: '#ffcc00', SAFE: '#34c759' }[stage];
+        const statusIcon = { DANGER: '🔴', CAUTION: '🟡', SAFE: '🟢' }[stage];
+        const shiftStatus = w.isActive ? '🟢 Currently On-Shift' : '⚫ Off-Shift';
+
+        const m = document.createElement('div');
+        m.id = 'profile-modal';
+        m.className = 'modal';
+        m.innerHTML = `
+            <div class="modal-content card-glass bordered profile-modal-body">
+                <div class="modal-header flex space-between align-center mb-md">
+                    <h2 class="highlight-cyan">Worker Profile (Bio)</h2>
+                    <button class="close-btn" onclick="document.getElementById('profile-modal').remove()">✖</button>
+                </div>
+                <div class="profile-hero">
+                    <div class="avatar-large" style="font-size:3.5rem; width:80px; height:80px;">👨🏽‍🏭</div>
+                    <div>
+                        <h2>${w.name}</h2>
+                        <p class="font-mono highlight-cyan">${w.id}</p>
+                        <p class="text-secondary text-sm mt-sm">${shiftStatus}</p>
+                    </div>
+                    <div class="profile-status-badge" style="background:${stageColor}22; border:1px solid ${stageColor}; color:${stageColor};">
+                        ${statusIcon} ${stage}
+                    </div>
+                </div>
+
+                <!-- BIOGRAPHICAL SECTION -->
+                <div class="profile-bio-section mt-md">
+                    <h4 class="mb-sm text-secondary uppercase text-xs">Biographical Narrative</h4>
+                    <p class="text-sm line-height-md mb-md">${w.bio || 'No biographical data available for this personnel.'}</p>
+                </div>
+
+                <div class="profile-stats grid layout-3-col">
+                    <div class="profile-stat">
+                        <p class="label">Experience</p>
+                        <h3>${w.exp || 'N/A'}</h3>
+                    </div>
+                    <div class="profile-stat">
+                        <p class="label">Blood Group</p>
+                        <h3>${w.blood || 'Unknown'}</h3>
+                    </div>
+                    <div class="profile-stat">
+                        <p class="label">Health Status</p>
+                        <h3>${w.health || 'Stable'}</h3>
+                    </div>
+                </div>
+
+                <div class="profile-stats grid layout-2-col mt-md">
+                   <div class="profile-stat">
+                        <p class="label">Base Location</p>
+                        <h3>Sector B-7</h3>
+                    </div>
+                    <div class="profile-stat">
+                        <p class="label">Total Experience</p>
+                        <h3>${w.exp || 'N/A'}</h3>
+                    </div>
+                </div>
+
+                <div class="twa-bar-section mt-md">
+                    <div class="flex space-between">
+                        <p class="label">Cumulative Exposure Alert Threshold</p>
+                        <p class="font-mono text-sm">${Math.min(Math.round((w.twa/50)*100),100)}%</p>
+                    </div>
+                    <div class="progress-bar-container mt-sm">
+                        <div class="progress-bar ${w.twa>50?'red':w.twa>25?'yellow':'green'}"
+                             style="width:${Math.min((w.twa/50)*100,100)}%"></div>
+                    </div>
+                </div>
+
+                ${w.isActive ? `<button class="btn btn-primary w-full mt-md" onclick="document.getElementById('profile-modal').remove(); window.endWorkerShift('${w.id}')">Emergency Shift Termination</button>` : `<p class="text-secondary text-center mt-md text-sm">Personnel currently off-duty.</p>`}
+            </div>
+        `;
+        document.body.appendChild(m);
+        // Click backdrop to close
+        m.addEventListener('click', (e) => { if (e.target === m) m.remove(); });
+    };
 
     // --- CHART.JS INITIALIZATION ---
     const ctx = document.getElementById('liveChart')?.getContext('2d');
     let pmChart = null;
     if (ctx) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(0, 225, 255, 0.3)');
+        gradient.addColorStop(1, 'rgba(0, 225, 255, 0.0)');
+
         pmChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [], datasets: [{
                     label: 'Fleet Average PM2.5 Stream', data: [],
-                    borderColor: '#00e1ff', backgroundColor: 'rgba(0, 225, 255, 0.15)',
-                    borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0
+                    borderColor: '#00e1ff', backgroundColor: gradient,
+                    borderWidth: 3, fill: true, tension: 0.4, 
+                    pointRadius: 0, pointHitRadius: 10,
+                    borderCapStyle: 'round'
                 }]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                scales: { x: { display: false }, y: { min: 0, max: 120, grid: { color: 'rgba(255,255,255,0.05)' } } },
-                animation: { duration: 0 }, plugins: { legend: { display: false } }
+                scales: { 
+                    x: { display: false }, 
+                    y: { 
+                        min: 0, max: 120, 
+                        grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                        ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'Space Mono' } }
+                    } 
+                },
+                animation: { duration: 800, easing: 'easeOutQuart' }, 
+                plugins: { legend: { display: false } }
             }
         });
     }
 
     // --- RADAR MAP RENDERING ---
     const radar = document.getElementById('radar');
-    const tt = document.getElementById('radar-tooltip');
+    let selectedWorkerId = null;
+
+    window.closeRadarDetail = function() {
+        selectedWorkerId = null;
+        document.querySelectorAll('.radar-dot.selected').forEach(d => d.classList.remove('selected'));
+        document.getElementById('radar-empty').classList.remove('hidden');
+        document.getElementById('radar-worker-info').classList.add('hidden');
+    };
+
+    function showRadarDetail(w) {
+        selectedWorkerId = w.id;
+        const stage = (w.pm > 50 || w.twa > 50) ? 'DANGER' : (w.pm > 25 || w.twa > 25) ? 'CAUTION' : 'SAFE';
+        const stageColorMap = { DANGER: '#ff3b30', CAUTION: '#ffcc00', SAFE: '#34c759' };
+        const barColorMap  = { DANGER: 'red', CAUTION: 'yellow', SAFE: 'green' };
+        const twaPercent = Math.min((w.twa / 50) * 100, 100);
+
+        document.getElementById('d-name').innerText    = w.name;
+        document.getElementById('d-id').innerText      = w.id;
+        document.getElementById('d-pm').innerHTML      = `${Math.round(w.pm)} <span class="unit">µg/m³</span>`;
+        document.getElementById('d-twa').innerHTML     = `${Math.round(w.twa)} <span class="unit">µg/m³</span>`;
+        document.getElementById('d-spo2').innerHTML    = `${w.spo2} <span class="unit">%</span>`;
+        document.getElementById('d-hours').innerHTML   = `${w.hours.toFixed(1)} <span class="unit">hrs</span>`;
+        document.getElementById('d-twa-pct').innerText = `${Math.round(twaPercent)}%`;
+
+        const bar = document.getElementById('d-twa-bar');
+        bar.style.width = twaPercent + '%';
+        bar.className = `progress-bar ${barColorMap[stage]}`;
+
+        const badge = document.getElementById('d-badge');
+        badge.innerText = stage;
+        badge.style.background = stageColorMap[stage] + '22';
+        badge.style.borderColor = stageColorMap[stage];
+        badge.style.color = stageColorMap[stage];
+
+        document.getElementById('d-btn-endshift').onclick = () => window.endWorkerShift(w.id);
+
+        document.getElementById('radar-empty').classList.add('hidden');
+        document.getElementById('radar-worker-info').classList.remove('hidden');
+    }
+
+    // Close detail when clicking radar background
+    radar && radar.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('radar-dot')) window.closeRadarDetail();
+    });
 
     function renderRadar() {
-        if(!radar) return;
+        if (!radar) return;
+        const activeCount = workersDB.filter(w => w.isActive).length;
+        const countEl = document.getElementById('radar-worker-count');
+        if (countEl) countEl.innerText = activeCount;
+
         document.querySelectorAll('.radar-dot').forEach(el => el.remove());
-        
+
         workersDB.forEach(w => {
             if (!w.isActive) return;
 
-            let dot = document.createElement('div');
+            const dot = document.createElement('div');
             dot.className = 'radar-dot';
-            
+            dot.title = '';
+
             if (w.pm > 50 || w.twa > 50) dot.classList.add('danger');
             else if (w.pm > 25 || w.twa > 25) dot.classList.add('caution');
             else dot.classList.add('safe');
-            
+
             w.radarX += (Math.random() * 4 - 2);
             w.radarY += (Math.random() * 4 - 2);
             if (w.radarX < 10) w.radarX = 10; if (w.radarX > 90) w.radarX = 90;
             if (w.radarY < 10) w.radarY = 10; if (w.radarY > 90) w.radarY = 90;
 
             dot.style.left = w.radarX + '%';
-            dot.style.top = w.radarY + '%';
+            dot.style.top  = w.radarY + '%';
 
-            // Radar Click Event
+            // Restore selected state if same worker
+            if (w.id === selectedWorkerId) {
+                dot.classList.add('selected');
+                showRadarDetail(w); // keep detail panel live
+            }
+
+            // CLICK ONLY — populate side panel
             dot.addEventListener('click', (e) => {
                 e.stopPropagation();
-                tt.classList.remove('hidden');
-                document.getElementById('tt-id').innerText = w.id;
-                document.getElementById('tt-name').innerText = w.name;
-                document.getElementById('tt-pm').innerText = Math.round(w.pm);
-                
-                const dangerStage = (w.pm > 50 || w.twa > 50) ? 'DANGER' : (w.pm > 25 || w.twa > 25) ? 'CAUTION' : 'SAFE';
-                const colorCls = (w.pm > 50 || w.twa > 50) ? 'text-red' : (w.pm > 25 || w.twa > 25) ? 'text-yellow' : 'text-green';
-                
-                const ttStatus = document.getElementById('tt-status');
-                ttStatus.innerText = dangerStage;
-                ttStatus.className = colorCls;
-                
-                // Keep tooltip slightly offset
-                tt.style.left = Math.min(w.radarX, 60) + '%';
-                tt.style.top = Math.max(w.radarY, 10) + '%';
-                
-                const btnEnd = document.getElementById('tt-btn-endshift');
-                btnEnd.onclick = () => { tt.classList.add('hidden'); window.endWorkerShift(w.id); };
+                document.querySelectorAll('.radar-dot.selected').forEach(d => d.classList.remove('selected'));
+                dot.classList.add('selected');
+                showRadarDetail(w);
             });
 
             radar.appendChild(dot);
         });
+
     }
 
     // --- SCANNER INTERACTION ---
@@ -276,7 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: generatedId, name: generatedName,
                     pm: Math.random() * 40 + 10, spo2: Math.floor(95 + Math.random() * 5), twa: Math.random() * 30 + 10,
                     radarX: 10 + Math.random() * 80, radarY:  10 + Math.random() * 80,
-                    hours: 0, peakPM: 0, pmHistory: [], isActive: true
+                    hours: 0, peakPM: 0, pmHistory: [], isActive: true,
+                    bio: 'Newly registered personnel. Pending full medical clearance and history sync.',
+                    blood: 'Pending', exp: 'New', health: 'Scanning'
                 };
                 workersDB.push(newW);
                 renderWorkersTable();
@@ -287,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 scanData.innerHTML = `
                     <div><p class="text-secondary text-sm">Name</p><p class="font-mono">${newW.name}</p></div>
                     <div><p class="text-secondary text-sm">Assigned ID</p><p class="font-mono">${newW.id}</p></div>
-                    <div style="grid-column: span 2"><p class="text-secondary text-sm">Status</p><p class="text-green font-mono">Syncing to cloud...</p></div>
+                    <div class="full-width"><p class="text-secondary text-sm">Status</p><p class="text-green font-mono">Syncing to cloud...</p></div>
                 `;
                 isAddMode = false;
                 btnAddMode.classList.replace('btn-primary', 'btn-secondary');
@@ -320,12 +491,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.body.classList.contains('lockdown-active')) {
             btnLockdown.innerText = "🛑 CANCEL LOCKDOWN";
             btnLockdown.style.background = 'black';
-            document.querySelector('.sidebar').style.borderRightColor = 'var(--accent-red)';
-            triggerAlertSMS("[CRITICAL] SITE WIDE EVACUATION. DUST LEVELS FATAL.");
+            document.querySelector('.top-navbar').style.borderBottomColor = 'var(--accent-red)';
+            triggerAlertSMS("[CRITICAL] SITE WIDE EVACUATION. DUST LEVELS FATAL.", workersDB[0].id);
         } else {
-            btnLockdown.innerText = "🚨 INITIATE LOCKDOWN";
-            btnLockdown.style.background = 'rgba(255, 59, 48, 0.2)';
-            document.querySelector('.sidebar').style.borderRightColor = 'var(--border-glass)';
+            btnLockdown.innerText = "🚨 LOCKDOWN";
+            btnLockdown.style.background = 'rgba(255, 59, 48, 0.15)';
+            document.querySelector('.top-navbar').style.borderBottomColor = 'var(--border-glass)';
         }
     });
 
@@ -367,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (rajan.twa > 25) elTwaBar.classList.add('yellow');
         else elTwaBar.classList.add('green');
         
-        if (rajan.pm > 50 && tickCount % 5 === 0 && !document.body.classList.contains('lockdown-active')) triggerAlertSMS();
+        if (rajan.pm > 50 && tickCount % 5 === 0 && !document.body.classList.contains('lockdown-active')) triggerAlertSMS(null, rajan.id);
 
         let activeWorkers = workersDB.filter(w => w.isActive);
         let fleetAvg = activeWorkers.length > 0 ? activeWorkers.reduce((sum, w) => sum + w.pm, 0) / activeWorkers.length : 0;
@@ -387,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function triggerAlertSMS(customMsg) {
+    function triggerAlertSMS(customMsg, workerId) {
         totalAlertsFired++;
         elGlobalAlerts.innerText = totalAlertsFired;
         
@@ -396,16 +567,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const bubble = document.createElement('div');
-        bubble.className = 'sms-bubble alert';
+        bubble.className = 'sms-bubble alert clickable-alert';
         
+        // Use provided workerId or default to Rajan (workersDB[0]) for the logic
+        const wId = workerId || workersDB[0].id;
+        const wObj = workersDB.find(w => w.id === wId) || workersDB[0];
+
         if (customMsg) {
-            bubble.innerHTML = `<strong>⚠️ SYS EMERGENCY ⚠️</strong><br>${customMsg}<br><small>${timeString}</small>`;
+            bubble.innerHTML = `<strong>⚠️ SYS EMERGENCY ⚠️</strong><br>${customMsg}<br><small>${timeString} • Click to View</small>`;
             bubble.style.border = '2px solid red';
             bubble.style.background = 'rgba(255, 0, 0, 0.4)';
         } else {
-            bubble.innerHTML = `<strong>NovaSafe Alert:</strong><br>Dust level DANGEROUS for ${workersDB[0].name} PM2.5 = ${Math.round(workersDB[0].pm)} µg/m³.<br><small>${timeString}</small>`;
+            bubble.innerHTML = `<strong>NovaSafe Alert:</strong><br>Dust level DANGEROUS for ${wObj.name}. PM2.5: ${Math.round(wObj.pm)} µg/m³.<br><small>${timeString} • Click to View Profile</small>`;
         }
         
+        // Add click listener to open profile
+        bubble.addEventListener('click', () => {
+            window.viewWorkerProfile(wId);
+        });
+
         elSmsFeed.appendChild(bubble);
         elSmsFeed.scrollTop = elSmsFeed.scrollHeight; 
     }

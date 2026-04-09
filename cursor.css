@@ -1,0 +1,406 @@
+/* ============================================================
+   DustGuard — Iconic Fantasy Cursor & Interaction CSS
+   ============================================================ */
+
+/* Hide system cursor everywhere */
+*, *::before, *::after { cursor: none !important; }
+
+/* ============================================================
+   CURSOR DOT — sharp chromatic core
+   ============================================================ */
+.cur-dot {
+    position: fixed;
+    top: 0; left: 0;
+    width: 6px; height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+    transition: width 0.12s ease, height 0.12s ease, background 0.12s ease;
+    box-shadow:
+        0 0 0 2px rgba(0, 225, 255, 0.6),
+        0 0 12px #00e1ff,
+        0 0 30px rgba(0, 225, 255, 0.4);
+}
+.cur-dot.hovering {
+    width: 10px; height: 10px;
+    background: #00e1ff;
+    box-shadow:
+        0 0 0 3px rgba(255,255,255,0.4),
+        0 0 20px #00e1ff,
+        0 0 50px rgba(0,225,255,0.5);
+}
+.cur-dot.clicking {
+    width: 3px; height: 3px;
+    box-shadow: 0 0 8px #fff, 0 0 20px rgba(0,225,255,0.8);
+}
+
+/* ============================================================
+   CURSOR RING — lagged, chromatic
+   ============================================================ */
+.cur-ring {
+    position: fixed;
+    top: 0; left: 0;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99998;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+    transition:
+        width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.3s ease;
+    /* Chromatic aberration ring */
+    box-shadow:
+        0 0 0 1.5px rgba(0, 225, 255, 0.7),
+        0 0 0 2.5px rgba(255, 0, 128, 0.2),
+        0 0 0 3.5px rgba(0, 225, 255, 0.1),
+        0 0 20px rgba(0, 225, 255, 0.15);
+}
+.cur-ring.hovering {
+    width: 54px; height: 54px;
+    box-shadow:
+        0 0 0 1.5px rgba(0, 225, 255, 0.9),
+        0 0 0 3px rgba(255, 0, 128, 0.3),
+        0 0 0 5px rgba(0, 225, 255, 0.1),
+        0 0 30px rgba(0, 225, 255, 0.35),
+        inset 0 0 15px rgba(0, 225, 255, 0.05);
+}
+.cur-ring.clicking {
+    width: 22px; height: 22px;
+    box-shadow:
+        0 0 0 1.5px #fff,
+        0 0 15px rgba(0, 225, 255, 0.8),
+        0 0 40px rgba(0, 225, 255, 0.4);
+}
+
+/* ============================================================
+   CANVAS LAYERS
+   ============================================================ */
+.cur-trail {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 99997;
+}
+.particle-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ============================================================
+   MOUSE AURA
+   ============================================================ */
+.mouse-aura {
+    position: fixed;
+    top: 0; left: 0;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(0, 225, 255, 0.05) 0%,
+        rgba(0, 225, 255, 0.01) 45%,
+        transparent 70%
+    );
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+    transition: left 0.05s linear, top 0.05s linear;
+}
+
+/* ============================================================
+   CLICK SPARKS
+   ============================================================ */
+.spark {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    animation: sparkFly 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes sparkFly {
+    0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(0.2); }
+}
+
+/* ============================================================
+   RIPPLE EFFECT
+   ============================================================ */
+.ripple {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: rgba(0, 225, 255, 0.5);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    animation: rippleOut 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    pointer-events: none;
+    z-index: 10;
+}
+@keyframes rippleOut {
+    0%   { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(25); opacity: 0; }
+}
+
+/* ============================================================
+   INTERACTIVE ELEMENT TRANSITIONS
+   ============================================================ */
+.btn, .btn-lockdown-top, .stat-pill, .nav-item, .card-glass, .panel-card {
+    transition:
+        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.3s ease,
+        background 0.3s ease,
+        color 0.3s ease,
+        border-color 0.3s ease !important;
+}
+
+/* ============================================================
+   GLOWS
+   ============================================================ */
+.card-glass:hover {
+    box-shadow: 0 20px 50px rgba(0, 225, 255, 0.08), 0 0 0 1px rgba(0, 225, 255, 0.15) !important;
+    border-color: rgba(0, 225, 255, 0.2) !important;
+    transform: translateY(-4px) !important;
+}
+.btn-primary:hover {
+    box-shadow: 0 0 30px rgba(0, 225, 255, 0.55), 0 8px 30px rgba(0, 225, 255, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+.btn-lockdown-top:hover {
+    box-shadow: 0 0 30px rgba(255,59,48,0.6), 0 8px 20px rgba(255,59,48,0.3) !important;
+}
+.stat-pill:hover {
+    box-shadow: 0 0 0 1px rgba(0, 225, 255, 0.35), 0 10px 30px rgba(0, 225, 255, 0.12) !important;
+}
+
+/* ACTIVE NAV GLOW LINE */
+.topbar-nav .nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 50%;
+    transform: translateX(-50%);
+    width: 60%; height: 2px;
+    background: var(--accent-cyan);
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--accent-cyan), 0 0 18px rgba(0,225,255,0.5);
+    animation: navGlow 2s ease-in-out infinite alternate;
+}
+@keyframes navGlow {
+    from { box-shadow: 0 0 6px var(--accent-cyan); }
+    to   { box-shadow: 0 0 22px var(--accent-cyan), 0 0 40px rgba(0,225,255,0.5); }
+}
+
+/* ============================================================
+   QUARRY MAP NEW LAYOUT
+   ============================================================ */
+.quarry-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.5rem;
+    height: calc(100vh - 200px);
+    min-height: 520px;
+}
+
+.radar-panel {
+    background: #020509;
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow: hidden;
+}
+
+.radar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.radar-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: 'Space Mono', monospace;
+}
+.legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.legend-dot.safe    { background: #34c759; box-shadow: 0 0 6px #34c759; }
+.legend-dot.caution { background: #ffcc00; box-shadow: 0 0 6px #ffcc00; }
+.legend-dot.danger  { background: #ff3b30; box-shadow: 0 0 6px #ff3b30; }
+
+.radar-hud {
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 225, 255, 0.4);
+    background: radial-gradient(circle, rgba(0,225,255,0.04) 0%, #000 80%);
+    position: relative;
+    margin: 0 auto;
+    aspect-ratio: 1;
+    max-height: 100%;
+    box-shadow: 0 0 40px rgba(0, 225, 255, 0.08), inset 0 0 30px rgba(0, 225, 255, 0.03);
+}
+
+/* DETAIL PANEL */
+.radar-detail-panel {
+    background: rgba(10, 15, 25, 0.85);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.radar-empty-state {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+.radar-empty-icon {
+    font-size: 3rem;
+    opacity: 0.4;
+    animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.radar-worker-detail {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-glass);
+}
+.detail-avatar {
+    font-size: 2.5rem;
+    width: 60px; height: 60px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-glass);
+    flex-shrink: 0;
+}
+
+.detail-status-badge {
+    text-align: center;
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    border: 1px solid;
+}
+
+.detail-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+.detail-metric {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-glass);
+    border-radius: 10px;
+    padding: 0.75rem;
+}
+.detail-metric .giant {
+    font-size: 1.6rem;
+    margin: 0.2rem 0;
+}
+
+.twa-bar-section { width: 100%; }
+
+.detail-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto;
+}
+.detail-actions .btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+}
+
+/* ============================================================
+   WORKER PROFILE MODAL
+   ============================================================ */
+.profile-modal-body {
+    width: 520px;
+    max-width: 95vw;
+}
+.profile-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-glass);
+    margin-bottom: 1.25rem;
+}
+.profile-status-badge {
+    margin-left: auto;
+    padding: 0.4rem 0.9rem;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+}
+.profile-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+.profile-stat {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-glass);
+    border-radius: 10px;
+    padding: 0.85rem;
+    text-align: center;
+}
+.profile-stat h3 {
+    font-size: 1.1rem;
+    font-family: 'Space Mono', monospace;
+    margin-top: 0.25rem;
+}
+.profile-stat .label {
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.mt-sm { margin-top: 0.5rem; }
+.mt-md { margin-top: 1.5rem; }
