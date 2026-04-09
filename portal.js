@@ -46,21 +46,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- WORKER DATABASE EXPANSION ---
     let workersDB = [
-        { id: 'TN-0042', name: 'Rajan K.', pm: 18, spo2: 98, twa: 15, radarX: 50, radarY: 50, hours: 4.5, peakPM: 18, pmHistory: [18] },
-        { id: 'TN-0089', name: 'Muthu S.', pm: 24, spo2: 97, twa: 22, radarX: 30, radarY: 70, hours: 3.2, peakPM: 24, pmHistory: [24] },
-        { id: 'TN-0103', name: 'Siva P.', pm: 39, spo2: 95, twa: 35, radarX: 80, radarY: 20, hours: 6.1, peakPM: 39, pmHistory: [39] },
-        { id: 'TN-0221', name: 'Karthi D.', pm: 65, spo2: 94, twa: 54, radarX: 20, radarY: 40, hours: 7.8, peakPM: 65, pmHistory: [65] },
-        { id: 'TN-0554', name: 'Arun M.', pm: 12, spo2: 99, twa: 13, radarX: 60, radarY: 80, hours: 1.5, peakPM: 12, pmHistory: [12] }
+        { id: 'TN-0042', name: 'Rajan K.', pm: 18, spo2: 98, twa: 15, radarX: 50, radarY: 50, hours: 4.5, peakPM: 18, pmHistory: [18], isActive: true },
+        { id: 'TN-0089', name: 'Muthu S.', pm: 24, spo2: 97, twa: 22, radarX: 30, radarY: 70, hours: 3.2, peakPM: 24, pmHistory: [24], isActive: true },
+        { id: 'TN-0103', name: 'Siva P.', pm: 39, spo2: 95, twa: 35, radarX: 80, radarY: 20, hours: 6.1, peakPM: 39, pmHistory: [39], isActive: true },
+        { id: 'TN-0221', name: 'Karthi D.', pm: 65, spo2: 94, twa: 54, radarX: 20, radarY: 40, hours: 7.8, peakPM: 65, pmHistory: [65], isActive: true },
+        { id: 'TN-0554', name: 'Arun M.', pm: 12, spo2: 99, twa: 13, radarX: 60, radarY: 80, hours: 1.5, peakPM: 12, pmHistory: [12], isActive: true },
+        { id: 'TN-0899', name: 'Vijay R.', pm: 0, spo2: 0, twa: 0, radarX: 0, radarY: 0, hours: 0, peakPM: 0, pmHistory: [], isActive: false }
     ];
 
-    const workersTableBody = document.getElementById('workers-table-body');
+    const activeWorkersTableBody = document.getElementById('active-workers-table-body');
+    const registeredWorkersTableBody = document.getElementById('registered-workers-table-body');
     const globalActive = document.getElementById('global-active');
 
     function renderWorkersTable() {
-        globalActive.innerHTML = `${workersDB.length} <span class="trend up">⚡ Live</span>`;
-        workersTableBody.innerHTML = ''; 
+        let activeWorkersCount = workersDB.filter(w => w.isActive).length;
+        globalActive.innerHTML = `${activeWorkersCount} <span class="trend up">⚡ Live</span>`;
+        activeWorkersTableBody.innerHTML = ''; 
+        registeredWorkersTableBody.innerHTML = '';
         
         workersDB.forEach(w => {
+            // Calculate danger stage for active workers
             let dangerStage = 'SAFE';
             let colorCls = 'text-green';
             let bgCls = 'rgba(52, 199, 89, 0.05)';
@@ -75,22 +80,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 bgCls = 'rgba(255, 204, 0, 0.05)';
             }
 
-            const tr = document.createElement('tr');
-            tr.style.backgroundColor = bgCls;
-            tr.style.borderBottom = '1px solid var(--border-glass)';
-            tr.innerHTML = `
+            // Always add to Registered Table
+            const trReg = document.createElement('tr');
+            trReg.style.borderBottom = '1px solid var(--border-glass)';
+            trReg.innerHTML = `
                 <td style="padding: 1rem;" class="font-mono">${w.id}</td>
                 <td style="padding: 1rem;"><strong>${w.name}</strong></td>
-                <td style="padding: 1rem;" class="font-mono">${w.hours.toFixed(2)}</td>
-                <td style="padding: 1rem;" class="font-mono ${colorCls}">${Math.round(w.pm)} µg/m³</td>
-                <td style="padding: 1rem;">${w.spo2}%</td>
-                <td style="padding: 1rem;" class="font-mono">${Math.round(w.twa)} µg/m³</td>
-                <td style="padding: 1rem;" class="font-mono ${colorCls}"><strong>${dangerStage}</strong></td>
+                <td style="padding: 1rem;" class="${w.isActive ? 'text-green' : 'text-secondary'}">${w.isActive ? 'On-Shift' : 'Off-Shift'}</td>
                 <td style="padding: 1rem; text-align: right;">
-                    <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="window.endWorkerShift('${w.id}')">End Shift</button>
+                    <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" ${w.isActive ? 'disabled style="opacity:0.5;"' : 'disabled'}>Profile</button>
                 </td>
             `;
-            workersTableBody.appendChild(tr);
+            registeredWorkersTableBody.appendChild(trReg);
+
+            // If active, add to Active Table
+            if (w.isActive) {
+                const trAct = document.createElement('tr');
+                trAct.style.backgroundColor = bgCls;
+                trAct.style.borderBottom = '1px solid var(--border-glass)';
+                trAct.innerHTML = `
+                    <td style="padding: 1rem;" class="font-mono">${w.id}</td>
+                    <td style="padding: 1rem;"><strong>${w.name}</strong></td>
+                    <td style="padding: 1rem;" class="font-mono">${w.hours.toFixed(2)}</td>
+                    <td style="padding: 1rem;" class="font-mono ${colorCls}">${Math.round(w.pm)} µg/m³</td>
+                    <td style="padding: 1rem;">${w.spo2}%</td>
+                    <td style="padding: 1rem;" class="font-mono">${Math.round(w.twa)} µg/m³</td>
+                    <td style="padding: 1rem;" class="font-mono ${colorCls}"><strong>${dangerStage}</strong></td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="window.endWorkerShift('${w.id}')">End Shift</button>
+                    </td>
+                `;
+                activeWorkersTableBody.appendChild(trAct);
+            }
         });
     }
 
@@ -133,6 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
             elRecom.style.color = "var(--accent-green)";
         }
 
+        w.isActive = false;
+        renderWorkersTable();
+        renderRadar();
+
         modal.classList.remove('hidden');
     };
     document.getElementById('close-modal').addEventListener('click', () => modal.classList.add('hidden'));
@@ -167,6 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.radar-dot').forEach(el => el.remove());
         
         workersDB.forEach(w => {
+            if (!w.isActive) return;
+
             let dot = document.createElement('div');
             dot.className = 'radar-dot';
             
@@ -249,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: generatedId, name: generatedName,
                     pm: Math.random() * 40 + 10, spo2: Math.floor(95 + Math.random() * 5), twa: Math.random() * 30 + 10,
                     radarX: 10 + Math.random() * 80, radarY:  10 + Math.random() * 80,
-                    hours: 0, peakPM: 0, pmHistory: []
+                    hours: 0, peakPM: 0, pmHistory: [], isActive: true
                 };
                 workersDB.push(newW);
                 renderWorkersTable();
@@ -342,7 +369,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (rajan.pm > 50 && tickCount % 5 === 0 && !document.body.classList.contains('lockdown-active')) triggerAlertSMS();
 
-        let fleetAvg = workersDB.reduce((sum, w) => sum + w.pm, 0) / workersDB.length;
+        let activeWorkers = workersDB.filter(w => w.isActive);
+        let fleetAvg = activeWorkers.length > 0 ? activeWorkers.reduce((sum, w) => sum + w.pm, 0) / activeWorkers.length : 0;
         elGlobalAvg.innerText = Math.round(fleetAvg) + " µg";
 
         renderWorkersTable();
@@ -387,6 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // ALL workers drift and record global calculations independently
         workersDB.forEach((w, index) => {
+            if (!w.isActive) return;
+
             // Hours increment slightly assuming real-time is sped up
             w.hours += 0.01;
 

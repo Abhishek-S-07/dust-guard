@@ -1,1 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DustGuard Impact Portal | Supervisor Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="portal.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
 
+    <!-- Authentication Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-box card-glass">
+            <div class="logo justify-center mb-md">
+                <span class="logo-icon">🫁</span>
+                <span class="logo-text">Dust<span class="highlight-cyan">Guard</span></span>
+            </div>
+            <h3 class="mb-sm text-center">Supervisor Access Portal</h3>
+            <p class="text-secondary text-sm text-center mb-md">Please enter your authorization pin to access live tracking.</p>
+            
+            <div class="input-group">
+                <input type="password" id="login-password" placeholder="Enter Password (admin)">
+                <button id="login-btn" class="btn btn-primary w-full mt-sm">Authenticate</button>
+            </div>
+            <p id="login-error" class="text-red text-sm text-center mt-sm hidden">Invalid password. Try 'admin'.</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="portal-layout" id="app-container" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar card-glass">
+            <div class="logo sidebar-logo">
+                <span class="logo-icon">🫁</span>
+                <span class="logo-text">Dust<span class="highlight-cyan">Guard</span></span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-target="view-overview">
+                    <span class="icon">📊</span> Overview
+                </a>
+                <a href="#" class="nav-item" data-target="view-scanner">
+                    <span class="icon">🔍</span> NFC Scanner
+                </a>
+                <a href="#" class="nav-item" data-target="view-active-shifts">
+                    <span class="icon">⏱️</span> Active Shifts
+                </a>
+                <a href="#" class="nav-item" data-target="view-directory">
+                    <span class="icon">📇</span> Worker Directory
+                </a>
+                <a href="#" class="nav-item" data-target="view-fleet">
+                    <span class="icon">📈</span> Fleet Analytics
+                </a>
+                <a href="#" class="nav-item" data-target="view-map">
+                    <span class="icon">🗺️</span> Quarry Map
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom mt-xl">
+                <button class="btn btn-primary w-full" style="background: rgba(255, 59, 48, 0.2); border: 1px solid var(--accent-red); box-shadow: 0 0 15px rgba(255, 59, 48, 0.4); color: white;" id="btn-lockdown">🚨 INITIATE LOCKDOWN</button>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="dashboard-content">
+            <header class="top-nav">
+                <div>
+                    <h2 class="page-title" id="dyn-title">Live Tracking</h2>
+                    <p class="text-secondary text-sm">Zone B Sector - Live Simulation</p>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar">👨‍💼</div>
+                    <span>Supervisor User</span>
+                </div>
+            </header>
+
+            <!-- VIEW 1: OVERVIEW SETTINGS -->
+            <section id="view-overview" class="view-section active">
+                <div class="grid layout-4-col quick-stats mb-md">
+                    <div class="stat-box card-glass">
+                        <p class="label">Total Active</p>
+                        <h3 class="value" id="global-active">42 <span class="trend up">⚡ Live</span></h3>
+                    </div>
+                    <div class="stat-box card-glass">
+                        <p class="label">Avg Sector PM2.5</p>
+                        <h3 class="value" id="global-avg">22 µg</h3>
+                    </div>
+                    <div class="stat-box card-glass">
+                        <p class="label">Active Danger Alerts</p>
+                        <h3 class="value warning" id="global-alerts">0</h3>
+                    </div>
+                    <div class="stat-box card-glass">
+                        <p class="label">Avg Tracking Time</p>
+                        <h3 class="value">4h 12m</h3>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="panel-card live-worker-panel card-glass">
+                        <div class="panel-header flex space-between align-center">
+                            <h3>Worker Focus Tracker</h3>
+                            <span class="tag tag-cyan">ID: TN-0042</span>
+                        </div>
+                        
+                        <div class="worker-info flex align-center mt-sm mb-md gap-sm">
+                            <div class="avatar-large">👨🏽‍🏭</div>
+                            <div>
+                                <h4>Rajan K.</h4>
+                                <p class="text-secondary text-sm">Shift Started: 06:00 AM</p>
+                                <p class="text-secondary text-sm">Location: Drilling Sector Alpha</p>
+                            </div>
+                        </div>
+
+                        <div class="live-metrics grid layout-2-col gap-sm">
+                            <div class="metric-block p-box bordered">
+                                <p class="label space-mono">Cur PM2.5</p>
+                                <h2 class="value giant" id="live-pm">18 <span class="unit">µg/m³</span></h2>
+                                <div class="led-indicator" id="live-led">
+                                    <span class="led green"></span> <span id="led-status-text">SAFE</span>
+                                </div>
+                            </div>
+                            <div class="metric-block p-box bordered">
+                                <p class="label space-mono">TWA (Time Wt. Avg)</p>
+                                <h2 class="value giant" id="live-twa">15 <span class="unit">µg/m³</span></h2>
+                                <div class="progress-bar-container mt-sm">
+                                    <div class="progress-bar green" id="twa-bar" style="width: 30%"></div>
+                                </div>
+                                <p class="text-sm mt-sm text-secondary">Legal Limit: 50 µg/m³</p>
+                            </div>
+                        </div>
+                        <div class="bio-metric p-box bordered mt-md flex space-between align-center">
+                            <div>
+                                <p class="label">MAX30102 Oxygen Saturation (SpO2)</p>
+                                <h3 id="live-spo2">98%</h3>
+                            </div>
+                            <div class="pulse-icon">❤️</div>
+                        </div>
+                        <div class="controls mt-md">
+                            <button class="btn btn-secondary w-full" id="btn-trigger-dust">Simulate Dust Spike (Drilling)</button>
+                        </div>
+                    </div>
+
+                    <div class="panel-card sms-simulation-panel card-glass">
+                        <div class="panel-header">
+                            <h3>Alert Lifecycle</h3>
+                        </div>
+                        <div class="mock-phone mt-md">
+                            <div class="mock-phone-header">
+                                <span class="time">14:02</span>
+                                <span class="icons">📶 🔋</span>
+                            </div>
+                            <div class="mock-phone-body" id="sms-feed">
+                                <div class="sms-bubble empty">No alerts yet. Worker is in safe zone.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 2: SCANNER -->
+            <section id="view-scanner" class="view-section">
+                <div class="scanner-container">
+                    <div class="flex space-between align-center mb-md">
+                        <p class="text-secondary text-center">Hover over the badge or click "Add New Worker" mode.</p>
+                        <button class="btn btn-secondary" id="btn-add-scan-mode">➕ Add Worker Mode</button>
+                    </div>
+                    
+                    <div class="scanner-stage flex justify-center mt-lg mb-lg">
+                        <div class="badge-mockup" id="mock-badge">
+                            <div class="badge-header">DUSTGUARD</div>
+                            <div class="badge-oled">
+                                <p id="badge-pm">PM2.5: --</p>
+                                <p>SpO2: --</p>
+                            </div>
+                            <div class="badge-chip"></div>
+                            <div class="badge-nfc-waves">
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="scan-result" class="card-glass bordered hidden" style="max-width: 600px; margin: 0 auto; margin-top: 2rem;">
+                        <h3 class="highlight-cyan mb-sm text-center" id="scan-title">Success: Worker Authenticated</h3>
+                        <div class="grid layout-2-col gap-sm" id="scan-data">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 3: ACTIVE SHIFTS -->
+            <section id="view-active-shifts" class="view-section">
+                <!-- Active Workers Section -->
+                <div class="card-glass p-box mb-lg">
+                    <div class="flex space-between align-center mb-md">
+                        <h3 class="mb-sm">Active Workers (On-Shift)</h3>
+                        <div class="text-sm border-glass" style="padding: 0.5rem; border-radius: 8px;">
+                            <strong>Status Keys:</strong> 
+                            <span class="text-green mx-sm">● Safe</span> 
+                            <span class="text-yellow mx-sm">● Caution</span> 
+                            <span class="text-red mx-sm">● Danger</span>
+                        </div>
+                    </div>
+                    
+                    <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-glass);">
+                                <th style="padding: 1rem; color: var(--text-secondary);">Worker ID</th>
+                                <th style="padding: 1rem; color: var(--text-secondary);">Name</th>
+                                <th style="padding: 1rem; color: var(--text-secondary);">Hours</th>
+                                <th style="padding: 1rem; color: var(--text-secondary);">Cur PM2.5</th>
+                                <th style="padding: 1rem; color: var(--text-secondary);">SpO2</th>
+                                <th style="padding: 1rem; color: var(--text-secondary);">Est. TWA</th>
+                                <th style="padding: 1rem; color: var(--text-secondary);">Danger Stage</th>
+                                <th style="padding: 1rem; color: var(--text-secondary); text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="active-workers-table-body">
+                            <!-- JavaScript generates rows here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW 3.5: WORKER DIRECTORY -->
+            <section id="view-directory" class="view-section">
+                <!-- Registered Workers Section -->
+                <div class="card-glass p-box">
+                    <div class="flex space-between align-center mb-md">
+                        <h3 class="mb-sm">All Registered Workers</h3>
+                    </div>
+                    
+                    <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 1rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-glass);">
+                                <th style="padding: 1rem; color: var(--text-secondary);">Worker ID</th>
+                                <th style="padding: 1rem; color: var(--text-secondary);">Name</th>
+                                <th style="padding: 1rem; color: var(--text-secondary);">Current Status</th>
+                                <th style="padding: 1rem; color: var(--text-secondary); text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registered-workers-table-body">
+                            <!-- JavaScript generates rows here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW 4: MAP -->
+            <section id="view-map" class="view-section">
+                <div class="card-glass p-box map-container" style="min-height: 550px; background: #000; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-glass);">
+                    <div class="flex space-between align-center mb-md" style="position: relative; z-index:10;">
+                        <h3>Quarry Tactical Radar</h3>
+                        <p class="text-secondary text-sm font-mono">SECTOR B-7 ACTIVE SCANS (Click for Details)</p>
+                    </div>
+                    
+                    <div class="radar-hud" id="radar">
+                        <div class="radar-core">
+                            <div class="radar-grid"></div>
+                            <div class="radar-scan"></div>
+                        </div>
+                        <!-- dynamic dots inside radar map -->
+                        
+                        <!-- Radar Info Tooltip -->
+                        <div id="radar-tooltip" class="radar-tooltip hidden">
+                            <span class="close-tooltip" onclick="document.getElementById('radar-tooltip').classList.add('hidden')">✖</span>
+                            <p class="text-sm text-secondary">WORKER SCANNED</p>
+                            <h4 id="tt-id" class="highlight-cyan font-mono mb-sm mt-sm">ID</h4>
+                            <p><strong>Name:</strong> <span id="tt-name">Name</span></p>
+                            <p><strong>PM2.5:</strong> <span id="tt-pm">0</span> µg</p>
+                            <p><strong>Status:</strong> <span id="tt-status">SAFE</span></p>
+                            <button class="btn btn-primary w-full mt-sm" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" id="tt-btn-endshift">END SHIFT</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 5: FLEET ANALYTICS -->
+            <section id="view-fleet" class="view-section">
+                <div class="card-glass p-box" style="height: 550px; background: #000; padding: 2rem; border-radius: 12px; border: 1px solid var(--border-glass); display: flex; flex-direction: column;">
+                    <div class="flex space-between align-center mb-md">
+                        <h3>Fleet Active Particulate Stream</h3>
+                        <p class="text-secondary text-sm font-mono">SITE-WIDE AGGREGATION</p>
+                    </div>
+                    
+                    <div class="chart-wrapper" style="flex: 1; position: relative;">
+                        <canvas id="liveChart"></canvas>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+    </div>
+
+    <!-- End of Shift Report Modal -->
+    <div class="modal hidden" id="shift-modal">
+        <div class="modal-content card-glass bordered">
+            <div class="modal-header flex space-between align-center mb-md">
+                <h2>DUSTGUARD SUMMARY</h2>
+                <button class="close-btn" id="close-modal">✖</button>
+            </div>
+            
+            <div class="receipt-body font-mono font-xs">
+                <p>==============================</p>
+                <p>Worker: <span id="r-name">Rajan K</span>   | ID: <span id="r-id">TN-0042</span></p>
+                <p>Date: <span id="report-date"></span></p>
+                <p>Duration Logged: <span id="r-hours">0</span> Hours</p>
+                <p>==============================</p>
+                <br>
+                <p>Peak PM2.5: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong id="r-peak">0</strong> µg/m³</p>
+                <p>Average TWA:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong id="r-twa">0</strong> µg/m³</p>
+                <p>Safe Limit: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50 µg/m³</p>
+                <p>Status: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong id="r-status" class="warning">EXCEEDED</strong></p>
+                <br>
+                <p>Avg SpO2: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong id="r-spo2">95.2%</strong></p>
+                <p>Alerts Fired: &nbsp;&nbsp;&nbsp;<strong id="r-alerts">0</strong></p>
+                <p>==============================</p>
+                <br>
+                <p class="receipt-recommendation highlight-cyan">
+                    ACTION RECOMMENDED:<br>
+                    <span id="r-recommendation">Review required</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+</body>
+</html>
