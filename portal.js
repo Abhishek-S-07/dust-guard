@@ -12,17 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
             loginOverlay.classList.add('hidden');
             setTimeout(() => {
                 loginOverlay.style.display = 'none';
-                
-                // Show dashboard elements
-                document.querySelectorAll('.portal-only').forEach(el => {
-                    el.style.display = (el.tagName === 'DIV' || el.tagName === 'SECTION') ? 'flex' : 'inline-block';
-                    if (el.classList.contains('nav-item')) el.style.display = 'flex';
-                });
-                document.getElementById('login-profile').classList.remove('hidden');
-                document.getElementById('btn-launch-portal').style.display = 'none';
-                
-                // Navigate to Overview
-                document.querySelector('[data-target="view-overview"]').click();
+                appContainer.style.display = 'flex';
+                appContainer.classList.add('fade-in');
             }, 600);
         } else {
             loginError.classList.remove('hidden');
@@ -34,10 +25,130 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') attemptLogin();
     });
 
-    document.getElementById('btn-launch-portal').addEventListener('click', () => {
-        loginOverlay.style.display = 'flex';
-        loginOverlay.classList.remove('hidden');
-        loginPass.focus();
+    // --- 3D CINEMATIC ENGINE (Three.js) ---
+    let scene3D, camera3D, renderer3D, lungs, particles, grid;
+
+    function initThreeJS() {
+        const container = document.getElementById('three-container');
+        if (!container) return;
+
+        scene3D = new THREE.Scene();
+        camera3D = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        renderer3D = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer3D.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer3D.domElement);
+
+        // 1. Tactical Grid
+        grid = new THREE.GridHelper(200, 40, 0x00e1ff, 0x051a25);
+        grid.position.y = -30;
+        grid.rotation.x = Math.PI * 0.05;
+        scene3D.add(grid);
+
+        // 2. Holographic Lungs (Wireframe Centerpiece)
+        lungs = new THREE.Group();
+        const lungGeom = new THREE.IcosahedronGeometry(10, 2);
+        const lungMat = new THREE.MeshBasicMaterial({ 
+            color: 0x00e1ff, 
+            wireframe: true, 
+            transparent: true, 
+            opacity: 0.2,
+            blending: THREE.AdditiveBlending 
+        });
+
+        const leftLung = new THREE.Mesh(lungGeom, lungMat);
+        leftLung.position.x = -6;
+        leftLung.scale.set(0.8, 1.2, 0.8);
+        
+        const rightLung = new THREE.Mesh(lungGeom, lungMat);
+        rightLung.position.x = 6;
+        rightLung.scale.set(0.8, 1.2, 0.8);
+
+        lungs.add(leftLung, rightLung);
+        lungs.position.z = -50;
+        scene3D.add(lungs);
+
+        // 3. 3D Particle Storm
+        const partGeom = new THREE.BufferGeometry();
+        const partCount = 4000;
+        const posArray = new Float32Array(partCount * 3);
+        for(let i=0; i < partCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 300;
+        }
+        partGeom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const partMat = new THREE.PointsMaterial({ 
+            size: 0.5, 
+            color: 0x00e1ff, 
+            transparent: true, 
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending
+        });
+        particles = new THREE.Points(partGeom, partMat);
+        scene3D.add(particles);
+
+        camera3D.position.z = 50;
+        animateThreeJS();
+    }
+
+    let breatheTime = 0;
+    function animateThreeJS() {
+        requestAnimationFrame(animateThreeJS);
+        
+        breatheTime += 0.02;
+        const pulse = 1 + Math.sin(breatheTime) * 0.05;
+        if (lungs) {
+            lungs.scale.set(pulse, pulse, pulse);
+            lungs.rotation.y += 0.005;
+        }
+
+        if (particles) {
+            particles.rotation.y += 0.001;
+            particles.position.y = Math.sin(breatheTime * 0.5) * 2;
+        }
+
+        if (grid) {
+            grid.position.z += 0.2;
+            if (grid.position.z > 20) grid.position.z = 0;
+        }
+
+        renderer3D.render(scene3D, camera3D);
+    }
+
+    // Window Resize for 3D
+    window.addEventListener('resize', () => {
+        if(camera3D && renderer3D) {
+            camera3D.aspect = window.innerWidth / window.innerHeight;
+            camera3D.updateProjectionMatrix();
+            renderer3D.setSize(window.innerWidth, window.innerHeight);
+        }
+    });
+
+    initThreeJS();
+
+    // --- 3D PARALLAX ENGINE ---
+    const scene = document.getElementById('parallax-scene');
+    document.addEventListener('mousemove', (e) => {
+        if (appContainer.style.display === 'none') return;
+        
+        const x = (window.innerWidth / 2 - e.clientX) / 40;
+        const y = (window.innerHeight / 2 - e.clientY) / 40;
+        
+        if (scene) {
+            scene.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+        }
+
+        // Sync Three.js Camera
+        if (camera3D) {
+            camera3D.rotation.y = lerp(camera3D.rotation.y, x * 0.01, 0.1);
+            camera3D.rotation.x = lerp(camera3D.rotation.x, y * 0.01, 0.1);
+        }
+
+        // Individual layer parallax
+        document.querySelectorAll('.parallax-layer').forEach(layer => {
+            const speed = parseFloat(layer.getAttribute('data-speed')) || 0.1;
+            const lx = (window.innerWidth / 2 - e.clientX) * speed;
+            const ly = (window.innerHeight / 2 - e.clientY) * speed;
+            layer.style.transform = `translate(${lx}px, ${ly}px)`;
+        });
     });
 
     // --- SPA ROUTING ---
@@ -48,19 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetId = item.getAttribute('data-target');
-            
-            // Toggle dashboard-only elements based on current view
-            const isDashboardView = ['view-overview', 'view-scanner', 'view-active-shifts', 'view-directory', 'view-fleet', 'view-map'].includes(targetId);
-            const statsBar = document.querySelector('.persistent-stats-bar');
-            if (statsBar) {
-                statsBar.style.display = isDashboardView ? 'flex' : 'none';
-            }
-
             navItems.forEach(n => n.classList.remove('active'));
             item.classList.add('active');
 
             viewSections.forEach(v => v.classList.remove('active'));
+            const targetId = item.getAttribute('data-target');
             document.getElementById(targetId).classList.add('active');
 
             if (pageTitle) pageTitle.innerText = item.innerText.replace(/[^\w\s]/gi, '').trim(); 

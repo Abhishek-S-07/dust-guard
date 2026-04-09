@@ -11,8 +11,10 @@
     <link rel="stylesheet" href="portal.css">
     <link rel="stylesheet" href="cursor.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
 </head>
 <body>
+    <div id="three-container" class="three-container"></div>
     <div class="portal-bg-blobs">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
@@ -20,7 +22,7 @@
     </div>
     <div class="glass-noise"></div>
 
-    <!-- Authentication Overlay -->
+    <!-- Authentication Overlay (Shown by default now) -->
     <div id="login-overlay" class="login-overlay">
         <div class="login-box card-glass">
             <div class="logo justify-center mb-md">
@@ -38,8 +40,8 @@
         </div>
     </div>
 
-    <!-- Main App -->
-    <div class="portal-layout" id="app-container">
+    <!-- Main App (Hidden until login) -->
+    <div class="portal-layout" id="app-container" style="display: none;">
 
         <!-- Full Top Navigation Bar -->
         <header class="top-navbar">
@@ -51,86 +53,41 @@
 
             <!-- Navigation Links -->
             <nav class="topbar-nav" id="main-nav">
-                <a href="#" class="nav-item active" data-target="view-home">
-                    <span class="icon">🏠</span> Home
+                <a href="#" class="nav-item active" data-target="view-overview">
+                    <span class="icon">📊</span> Overview
                 </a>
-                <a href="#" class="nav-item portal-only" data-target="view-overview" style="display: none;">
-                    <span class="icon">📊</span> Command Center
+                <a href="#" class="nav-item" data-target="view-scanner">
+                    <span class="icon">🔍</span> NFC Scanner
                 </a>
-                <a href="#" class="nav-item portal-only" data-target="view-map" style="display: none;">
+                <a href="#" class="nav-item" data-target="view-active-shifts">
+                    <span class="icon">⏱️</span> Active Shifts
+                </a>
+                <a href="#" class="nav-item" data-target="view-directory">
+                    <span class="icon">📇</span> Worker Directory
+                </a>
+                <a href="#" class="nav-item" data-target="view-fleet">
+                    <span class="icon">📈</span> Fleet Analytics
+                </a>
+                <a href="#" class="nav-item" data-target="view-map">
                     <span class="icon">🗺️</span> Quarry Map
-                </a>
-                <a href="#" class="nav-item" data-target="view-tech">
-                    <span class="icon">⚡</span> How it Works
                 </a>
             </nav>
 
             <!-- Right Controls -->
             <div class="topbar-right">
-                <button class="btn btn-primary" id="btn-launch-portal">Launch Portal ➔</button>
-                <div class="user-profile hidden" id="login-profile">
+                <button class="btn-lockdown-top" id="btn-lockdown">🚨 LOCKDOWN</button>
+                <div class="user-profile">
                     <div class="avatar">👨‍💼</div>
                     <span>Supervisor</span>
                 </div>
             </div>
         </header>
 
-        <!-- Main Dashboard Content -->
-        <main class="dashboard-content">
+        <!-- 3D Parallax Scene Wrapper -->
+        <main class="dashboard-content" id="parallax-scene">
 
-            <!-- VIEW: LANDING PAGE -->
-            <section id="view-home" class="view-section active hero-section">
-                <div class="hero-content">
-                    <div class="badge-new mb-md">V2.0 LIVE: NEXT-GEN BIOSYNC</div>
-                    <h1 class="hero-title">Breathe with <span class="gradient-text-cyan">Confidence.</span><br>Protect with Precision.</h1>
-                    <p class="hero-subtitle">The world's first industrial-grade IoT safety ecosystem that predicts dust exposure before it happens. Powered by NovaSafe Biosync technology.</p>
-                    <div class="hero-actions">
-                        <button class="btn btn-primary btn-lg" onclick="document.getElementById('btn-launch-portal').click()">Launch Command Center</button>
-                        <button class="btn btn-secondary btn-lg" onclick="document.querySelector('[data-target=view-tech]').click()">Watch Demo 🎬</button>
-                    </div>
-                </div>
-
-                <div class="hero-visual">
-                    <div class="floating-badge-model">
-                        <div class="badge-card-3d">
-                            <div class="card-inner">
-                                <span class="chip"></span>
-                                <div class="card-signal-waves">
-                                    <span></span><span></span><span></span>
-                                </div>
-                                <div class="card-data">
-                                    <p class="label">LIVE STATUS</p>
-                                    <h4 class="value">SYNCED</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- VIEW: HOW IT WORKS (TECH) -->
-            <section id="view-tech" class="view-section">
-                <div class="tech-grid">
-                    <div class="card-glass p-box tech-card">
-                        <div class="tech-icon">📡</div>
-                        <h3>Smart IoT Badges</h3>
-                        <p class="text-secondary">Ultra-low power NFC sensors that detect PM2.5 and PM10 particles in the immediate breathing zone of every worker.</p>
-                    </div>
-                    <div class="card-glass p-box tech-card">
-                        <div class="tech-icon">🧠</div>
-                        <h3>AI Risk Predictor</h3>
-                        <p class="text-secondary">Our exposure engine analyzes 8-hour TWA patterns to predict health risks before they lead to long-term impact.</p>
-                    </div>
-                    <div class="card-glass p-box tech-card">
-                        <div class="tech-icon">⚡</div>
-                        <h3>Live Fleet Sync</h3>
-                        <p class="text-secondary">Seamless command & control. View every worker, every sector, every breath—all within a single dashboard.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PERSISTENT DASHBOARD STATS (hidden on Landing) -->
-            <div class="persistent-stats-bar portal-only" style="display: none;">
+            <!-- PERSISTENT DASHBOARD STATS -->
+            <div class="persistent-stats-bar parallax-layer" data-speed="0.05">
                 <div class="stat-pill card-glass">
                     <span class="stat-pill-icon">👷</span>
                     <div>
@@ -162,7 +119,8 @@
             </div>
 
             <!-- VIEW 1: OVERVIEW -->
-            <section id="view-overview" class="view-section">
+            <section id="view-overview" class="view-section active parallax-layer" data-speed="0.1">
+
                 <div class="dashboard-grid">
                     <div class="panel-card live-worker-panel card-glass">
                         <div class="panel-header flex space-between align-center">
@@ -323,7 +281,7 @@
             <section id="view-map" class="view-section">
                 <div class="quarry-layout">
                     <!-- LEFT: Radar -->
-                    <div class="radar-panel card-glass">
+                    <div class="panel-card map-panel card-glass parallax-layer" data-speed="0.15">
                         <div class="radar-header">
                             <div>
                                 <h3>Quarry Tactical Radar</h3>
