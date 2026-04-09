@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- 3D CINEMATIC ENGINE (Three.js) ---
-    let scene3D, camera3D, renderer3D, lungs, particles, grid;
+    let scene3D, camera3D, renderer3D, lungs, particles, grid, radGroup, mannequin;
 
     function initThreeJS() {
         const container = document.getElementById('three-container');
@@ -39,57 +39,92 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(renderer3D.domElement);
 
         // 1. Tactical Grid
-        grid = new THREE.GridHelper(200, 40, 0x00e1ff, 0x051a25);
-        grid.position.y = -30;
-        grid.rotation.x = Math.PI * 0.05;
+        grid = new THREE.GridHelper(400, 80, 0x00e1ff, 0x030810);
+        grid.position.y = -40;
+        grid.rotation.x = Math.PI * 0.02;
         scene3D.add(grid);
 
         // 2. Holographic Lungs (Wireframe Centerpiece)
         lungs = new THREE.Group();
-        const lungGeom = new THREE.IcosahedronGeometry(10, 2);
+        const lungGeom = new THREE.IcosahedronGeometry(12, 2);
         const lungMat = new THREE.MeshBasicMaterial({ 
             color: 0x00e1ff, 
             wireframe: true, 
             transparent: true, 
-            opacity: 0.2,
+            opacity: 0.15,
             blending: THREE.AdditiveBlending 
         });
 
         const leftLung = new THREE.Mesh(lungGeom, lungMat);
-        leftLung.position.x = -6;
-        leftLung.scale.set(0.8, 1.2, 0.8);
+        leftLung.position.x = -7;
+        leftLung.scale.set(0.8, 1.3, 0.8);
         
         const rightLung = new THREE.Mesh(lungGeom, lungMat);
-        rightLung.position.x = 6;
-        rightLung.scale.set(0.8, 1.2, 0.8);
+        rightLung.position.x = 7;
+        rightLung.scale.set(0.8, 1.3, 0.8);
 
         lungs.add(leftLung, rightLung);
-        lungs.position.z = -50;
+        lungs.position.z = -60;
         scene3D.add(lungs);
+
+        // 2b. Holographic Mannequin for Scanner
+        mannequin = new THREE.Group();
+        const manMat = new THREE.MeshBasicMaterial({ color: 0x00e1ff, wireframe: true, transparent: true, opacity: 0 });
+        
+        const head = new THREE.Mesh(new THREE.SphereGeometry(2, 12, 12), manMat);
+        head.position.y = 12;
+        
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(3, 2.5, 8, 12), manMat);
+        torso.position.y = 6;
+        
+        const lArm = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 7), manMat);
+        lArm.position.set(-4.5, 7, 0); lArm.rotation.z = 0.5;
+        
+        const rArm = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 7), manMat);
+        rArm.position.set(4.5, 7, 0); rArm.rotation.z = -0.5;
+
+        mannequin.add(head, torso, lArm, rArm);
+        mannequin.position.set(0, -10, -30);
+        mannequin.visible = false;
+        scene3D.add(mannequin);
+
+        // 2c. 3D Radar Visuals
+        radGroup = new THREE.Group();
+        scene3D.add(radGroup);
 
         // 3. 3D Particle Storm
         const partGeom = new THREE.BufferGeometry();
-        const partCount = 4000;
+        const partCount = 5000;
         const posArray = new Float32Array(partCount * 3);
-        for(let i=0; i < partCount * 3; i++) {
-            posArray[i] = (Math.random() - 0.5) * 300;
+        const colorArray = new Float32Array(partCount * 3);
+        for(let i=0; i < partCount * 3; i+=3) {
+            posArray[i] = (Math.random() - 0.5) * 400;
+            posArray[i+1] = (Math.random() - 0.5) * 400;
+            posArray[i+2] = (Math.random() - 0.5) * 400;
+            
+            colorArray[i] = 0;   // R
+            colorArray[i+1] = 0.88; // G (cyan)
+            colorArray[i+2] = 1.0; // B
         }
         partGeom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        partGeom.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+        
         const partMat = new THREE.PointsMaterial({ 
-            size: 0.5, 
-            color: 0x00e1ff, 
+            size: 0.6, 
+            vertexColors: true,
             transparent: true, 
-            opacity: 0.4,
+            opacity: 0.35,
             blending: THREE.AdditiveBlending
         });
         particles = new THREE.Points(partGeom, partMat);
         scene3D.add(particles);
 
-        camera3D.position.z = 50;
+        camera3D.position.z = 60;
         animateThreeJS();
     }
 
     let breatheTime = 0;
+    let scanAnim = 0;
     function animateThreeJS() {
         requestAnimationFrame(animateThreeJS);
         
@@ -97,21 +132,65 @@ document.addEventListener('DOMContentLoaded', () => {
         const pulse = 1 + Math.sin(breatheTime) * 0.05;
         if (lungs) {
             lungs.scale.set(pulse, pulse, pulse);
-            lungs.rotation.y += 0.005;
+            lungs.rotation.y += 0.003;
         }
 
+        // Mannequin visibility & scanning logic
+        if (mannequin && mannequin.visible) {
+            scanAnim += 0.05;
+            mannequin.rotation.y += 0.01;
+            mannequin.children.forEach(child => {
+                child.material.opacity = 0.1 + Math.abs(Math.sin(scanAnim)) * 0.3;
+            });
+        }
+
+        // 3D Radar Logic - sync with worker count
+        update3DRadar();
+
         if (particles) {
-            particles.rotation.y += 0.001;
-            particles.position.y = Math.sin(breatheTime * 0.5) * 2;
+            particles.rotation.y += 0.0008;
+            particles.position.y = Math.sin(breatheTime * 0.4) * 3;
         }
 
         if (grid) {
-            grid.position.z += 0.2;
+            grid.position.z += 0.3;
             if (grid.position.z > 20) grid.position.z = 0;
         }
 
         renderer3D.render(scene3D, camera3D);
     }
+
+    function update3DRadar() {
+        if (!radGroup || currentView !== 'view-map') {
+            if (radGroup) radGroup.visible = false;
+            return;
+        }
+        radGroup.visible = true;
+        
+        // Remove old spheres
+        while(radGroup.children.length > 0) radGroup.remove(radGroup.children[0]);
+        
+        // Build spheres based on active workers in workersDB
+        workersDB.filter(w => w.isActive).forEach(w => {
+            const sphere = new THREE.Mesh(
+                new THREE.SphereGeometry(1, 8, 8),
+                new THREE.MeshBasicMaterial({ 
+                    color: w.pm > 50 ? 0xff3b30 : (w.pm > 30 ? 0xffcc00 : 0x00e1ff),
+                    transparent: true,
+                    opacity: 0.6
+                })
+            );
+            // Map 2D radar coords to 3D space
+            sphere.position.set(
+                (w.radarX - 50) * 0.8,
+                (w.radarY - 50) * -0.8,
+                -10 + Math.sin(breatheTime + w.radarX) * 5
+            );
+            radGroup.add(sphere);
+        });
+    }
+
+    let currentView = 'view-overview';
 
     // Window Resize for 3D
     window.addEventListener('resize', () => {
@@ -165,6 +244,16 @@ document.addEventListener('DOMContentLoaded', () => {
             viewSections.forEach(v => v.classList.remove('active'));
             const targetId = item.getAttribute('data-target');
             document.getElementById(targetId).classList.add('active');
+
+            currentView = targetId;
+
+            // 3D Scene Controls
+            if (mannequin) {
+                mannequin.visible = (targetId === 'view-scanner');
+            }
+            if (lungs) {
+                lungs.visible = (targetId === 'view-overview');
+            }
 
             if (pageTitle) pageTitle.innerText = item.innerText.replace(/[^\w\s]/gi, '').trim(); 
         });
